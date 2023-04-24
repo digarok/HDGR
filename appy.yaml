@@ -1,0 +1,14 @@
+assemble: [src/hdgr.s]
+indent: []
+disks:
+- name: hdgr
+  file: hdgr.2mg
+  size: 800KB
+  files:
+#  - input: ../PRODOS.2.4.2/PRODOS
+#    output: /hdgr       
+  - input: src/hdgr.system
+    output: /hdgr
+  
+
+
