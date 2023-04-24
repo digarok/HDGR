@@ -2,22 +2,23 @@
                 org   $2000                 ; start at $2000 (all ProDOS8 system files)
                 typ   $ff                   ; set P8 type ($ff = "SYS") for output file
                 dsk   hdgr.system
+
+                jsr   HELP
                 clc
                 xce
                 sep   #$30
 
-Main
-                jsr   DLRON
+Main            jsr   DLRON
 
 :picloop
                 jsr   HDGRA_Blit
-                jsr   HDGR
+                jsr   HDGR_ShowMode
                 jsr   HDGRB_Blit
-                jsr   HDGR
+                jsr   HDGR_ShowMode
                 jsr   HDGRC_Blit
-                jsr   HDGR
+                jsr   HDGR_ShowMode
                 jsr   HDGRD_Blit
-                jsr   HDGR
+                jsr   HDGR_ShowMode
 
                 * jsr   WaitKey
                 * inc   $c034
@@ -41,6 +42,7 @@ HDGR_DataPtr    =     $22
 HDGR_DestPtr    =     $26
 HDGR_PageOffset =     $2A
 HDGR_CurLine    dw    0
+HDGR_Mode       db    0                     ; 0 = normal hardware; 1 = glitchy emulators
 
 HDGRA_Blit
                 rep   $30
@@ -160,6 +162,23 @@ HDGR_Blit       mx    %00
 :done
                 rts
                 mx    %11
+HDGR_ShowMode   lda   HDGR_Mode
+                bne   :glitchy
+:normal         jsr   HDGR2
+                bra   :handle_key
+:glitchy        jsr   HDGR
+:handle_key     cmp   #"s"
+                beq   :switch
+                cmp   #"S"
+                beq   :switch
+                rts
+:switch         lda   HDGR_Mode
+                bne   :set0
+:set1           inc   HDGR_Mode
+                bra   HDGR_ShowMode
+:set0           stz   HDGR_Mode
+                bra   HDGR_ShowMode
+
 
 _nextLine       =     $20
 HDGR
@@ -184,8 +203,33 @@ HDGR
                 lda   KEY
                 bpl   :frameloop
                 sta   STROBE
-                                            ; handle 1234
-                rts
+
+                rts                         ; always return the key pressed
+
+                bra   :frameloop
+
+
+HDGR2
+:frameloop      lda   #$7F                  ; Start Line
+                sta   _nextLine
+                _WAITSCB2
+                sta   $c054
+                bra   :skip1
+:fliploop       _WAITSCB2
+                sta   $c054
+:skip1          inc   _nextLine
+                lda   _nextLine
+                _WAITSCB2
+                sta   $c055
+                inc   _nextLine
+                lda   _nextLine
+                cmp   #$e0
+                bcc   :fliploop
+
+                lda   KEY
+                bpl   :frameloop
+                sta   STROBE
+                rts                         ; always return the key pressed
 
                 bra   :frameloop
 
@@ -208,18 +252,24 @@ __smc           cmp   #0                    ;SMC
 
 
 _WAITSCBA       MAC
-                sta   __smc+1
+                sta   __smc+1               ;set scanline
 __w             rep   $30
                 lda   $C02E
                 xba
                 sep   $30
-                asl   A                     ;VA is now in the Carry flag
+                asl                         ;VA is now in the Carry flag
                 xba
-                rol   A
+                rol
 __smc           cmp   #0                    ;SMC
                 bne   __w
                 EOM
 
+_WAITSCB2       MAC
+                sta   __smc+1               ;set scanline
+__w             lda   $C02E
+__smc           cmp   #0                    ;SMC
+                bne   __w
+                EOM
 
                 * ^showlores          $C056
                 * ^showfull           C052
@@ -238,9 +288,13 @@ DLRON           lda   $C056                 ;
                 rts
 
 
+
 **** APPLE ROM LOCATIONS ****
 KEY             =     $C000
 STROBE          =     $C010
+HOME            =     $FC58
+CROUT           =     $FD8E
+COUT            =     $FDED
 
 *************************************
 * LORES / DOUBLE LORES / TEXT LINES *
@@ -276,5 +330,27 @@ LoLineTable     da    Lo01,Lo02,Lo03,Lo04,Lo05,Lo06
                 da    Lo13,Lo14,Lo15,Lo16,Lo17,Lo18
                 da    Lo19,Lo20,Lo21,Lo22,Lo23,Lo24
 
+HELP            jsr   HOME                  ; clear screen
+                LUP   6
+                jsr   CROUT
+                --^
+                ldx   #0
+:next           lda   _HelpTxt,x
+                beq   :help2
+                jsr   COUT
+                inx
+                bra   :next
+:help2          jsr   CROUT
+                jsr   CROUT
+                ldx   #0
+:next2          lda   _HelpTxt2,x
+                beq   :done
+                jsr   COUT
+                inx
+                bra   :next2
+:done           jsr   WaitKey
+                rts
+_HelpTxt        asc   "   PRESS 'S' IF THE IMAGE IS GARBLED.",00
+_HelpTxt2       asc   "      HIT ANY KEY TO CONTINUE...",00
                 put   testimages.s
 
