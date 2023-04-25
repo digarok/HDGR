@@ -7,6 +7,8 @@ This creates a new software controlled graphics mode that doubles the vertical r
 
 The DGR mode is originally capable of 80x48 at 16 colors.  HDGR switches between _two_ DGR pages at precise times to create a resolution of 80x96 at 16 colors.
 
+![Comparison of the three resolutions](./content/doc/HDGR-COMPARISON.png)
+
 There's not really any trickery, though this does use some CPU.  And I'm not really treading any new ground as mode switching tricks go all the way back to Bob Bishop, and there are other people who've done this with other modes like Deater with lo-res and DWSJason with text (TextFunk).  But I do believe I'm the first to make this mode.  This is a fact I put in the README because I can't really share this info at dinner parties, can I?
 
 
@@ -22,3 +24,6 @@ I would love to see someone make an 8-bit Apple II version of this.  I think it 
 
 I'm a demo coder and I thought it might be useful in that world, but even on the Apple IIgs it leaves little time to re-blit the screen and doesn't seem like I'd be able to pull of 30 FPS, let alone 60 FPS.  So for now, the itch is scratched.  Another idea explored to verify the possibility.  Maybe you can take it further?
 
+I do think it looks cool. 
+
+![On real hardware](./content/doc/HDGR-ON-HARDWARE.png)
