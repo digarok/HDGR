@@ -1,28 +1,35 @@
-                lst   off
+**************************
+*     __ _____  ________  ************************
+*    / // / _ \/ ___/ _ \  * HDGR by Digarok      *
+*   / _  / // / (_ / , _/  *  a new graphics mode  *
+*  /_//_/____/\___/_/|_|   *   for Apple II ;)     *
+*                         *    80x96 at 16-colors *
+**************************************************
+   
                 org   $2000                 ; start at $2000 (all ProDOS8 system files)
                 typ   $ff                   ; set P8 type ($ff = "SYS") for output file
                 dsk   hdgr.system
 
-                jsr   HELP
+                jsr   HELP                  ; Show intro message
                 clc
-                xce
+                xce                         ; 65816-land (native modep)
                 sep   #$30
 
-Main            jsr   DLRON
+Main            jsr   DLRON                 ; Turn on "regular" DGR (aka DLR, aka Double Lo-Res) 80x48
 
 :picloop
-                jsr   HDGRA_Blit
-                jsr   HDGR_ShowMode
-                jsr   HDGRB_Blit
-                jsr   HDGR_ShowMode
-                jsr   HDGRC_Blit
+                jsr   HDGRA_Blit            ; copy pic A
+                jsr   HDGR_ShowMode         ; show pic A
+                jsr   HDGRB_Blit            ; copy pic B
+                jsr   HDGR_ShowMode         ; show pic B
+                jsr   HDGRC_Blit            ; etc...
                 jsr   HDGR_ShowMode
                 jsr   HDGRD_Blit
                 jsr   HDGR_ShowMode
+                jsr   HDGRE_Blit
+                jsr   HDGR_ShowMode
 
-                * jsr   WaitKey
-                * inc   $c034
-                bra   :picloop
+                bra   :picloop              ; There is no escape! ;)
 
 
 WaitKey16       sep   $30
@@ -38,75 +45,79 @@ WaitKey         lda   KEY
                 rts
 
 
-HDGR_DataPtr    =     $22
-HDGR_DestPtr    =     $26
-HDGR_PageOffset =     $2A
-HDGR_CurLine    dw    0
-HDGR_Mode       db    0                     ; 0 = normal hardware; 1 = glitchy emulators
-
-HDGRA_Blit
-                rep   $30
+** These could just be a macro, or a function pointing to a table of parameters if many images
+** ... but for the PoC I'm leaving it as a simple set of functions for each image
+HDGRA_Blit      rep   $30
                 lda   #HDGRA_P1_MAIN
-                jsr   _HGDR_BLIT_P1_MAIN
+                jsr   HGDR_BLIT_P1_MAIN
                 lda   #HDGRA_P1_AUX
-                jsr   _HGDR_BLIT_P1_AUX
+                jsr   HGDR_BLIT_P1_AUX
                 lda   #HDGRA_P2_MAIN
-                jsr   _HGDR_BLIT_P2_MAIN
+                jsr   HGDR_BLIT_P2_MAIN
                 lda   #HDGRA_P2_AUX
-                jsr   _HGDR_BLIT_P2_AUX
+                jsr   HGDR_BLIT_P2_AUX
                 sep   $30
                 rts
-HDGRB_Blit
-                rep   $30
+
+HDGRB_Blit      rep   $30
                 lda   #HDGRB_P1_MAIN
-                jsr   _HGDR_BLIT_P1_MAIN
+                jsr   HGDR_BLIT_P1_MAIN
                 lda   #HDGRB_P1_AUX
-                jsr   _HGDR_BLIT_P1_AUX
+                jsr   HGDR_BLIT_P1_AUX
                 lda   #HDGRB_P2_MAIN
-                jsr   _HGDR_BLIT_P2_MAIN
+                jsr   HGDR_BLIT_P2_MAIN
                 lda   #HDGRB_P2_AUX
-                jsr   _HGDR_BLIT_P2_AUX
+                jsr   HGDR_BLIT_P2_AUX
                 sep   $30
                 rts
 
-HDGRC_Blit
-                rep   $30
+HDGRC_Blit      rep   $30
                 lda   #HDGRC_P1_MAIN
-                jsr   _HGDR_BLIT_P1_MAIN
+                jsr   HGDR_BLIT_P1_MAIN
                 lda   #HDGRC_P1_AUX
-                jsr   _HGDR_BLIT_P1_AUX
+                jsr   HGDR_BLIT_P1_AUX
                 lda   #HDGRC_P2_MAIN
-                jsr   _HGDR_BLIT_P2_MAIN
+                jsr   HGDR_BLIT_P2_MAIN
                 lda   #HDGRC_P2_AUX
-                jsr   _HGDR_BLIT_P2_AUX
+                jsr   HGDR_BLIT_P2_AUX
                 sep   $30
                 rts
 
-HDGRD_Blit
-                rep   $30
+HDGRD_Blit      rep   $30
                 lda   #HDGRD_P1_MAIN
-                jsr   _HGDR_BLIT_P1_MAIN
+                jsr   HGDR_BLIT_P1_MAIN
                 lda   #HDGRD_P1_AUX
-                jsr   _HGDR_BLIT_P1_AUX
+                jsr   HGDR_BLIT_P1_AUX
                 lda   #HDGRD_P2_MAIN
-                jsr   _HGDR_BLIT_P2_MAIN
+                jsr   HGDR_BLIT_P2_MAIN
                 lda   #HDGRD_P2_AUX
-                jsr   _HGDR_BLIT_P2_AUX
+                jsr   HGDR_BLIT_P2_AUX
+                sep   $30
+                rts
+
+HDGRE_Blit      rep   $30
+                lda   #HDGRE_P1_MAIN
+                jsr   HGDR_BLIT_P1_MAIN
+                lda   #HDGRE_P1_AUX
+                jsr   HGDR_BLIT_P1_AUX
+                lda   #HDGRE_P2_MAIN
+                jsr   HGDR_BLIT_P2_MAIN
+                lda   #HDGRE_P2_AUX
+                jsr   HGDR_BLIT_P2_AUX
                 sep   $30
                 rts
 
 
-_HGDR_BLIT_P1_MAIN mx %00
+** 4 different blit functions depending on which page/bank we're writing to
+** Could replace with traditional aux/main writing functions for 8-bit Apple II
+HGDR_BLIT_P1_MAIN mx  %00
                 stz   HDGR_DataPtr+2        ; data bank
                 sta   HDGR_DataPtr          ; data ptr
                 stz   HDGR_PageOffset       ; $000
                 stz   HDGR_DestPtr+2        ; destbank = 00
-
                 jmp   HDGR_Blit
 
-                * jsr   WaitKey16
-
-_HGDR_BLIT_P1_AUX mx  %00
+HGDR_BLIT_P1_AUX mx   %00
                 stz   HDGR_DataPtr+2        ; data bank
                 sta   HDGR_DataPtr          ; data ptr
                 stz   HDGR_PageOffset       ; $000
@@ -114,7 +125,7 @@ _HGDR_BLIT_P1_AUX mx  %00
                 sta   HDGR_DestPtr+2        ; destbank = e1
                 jmp   HDGR_Blit
 
-_HGDR_BLIT_P2_MAIN mx %00
+HGDR_BLIT_P2_MAIN mx  %00
                 stz   HDGR_DataPtr+2        ; data bank
                 sta   HDGR_DataPtr          ; data ptr
                 lda   #$400
@@ -123,7 +134,7 @@ _HGDR_BLIT_P2_MAIN mx %00
                 sta   HDGR_DestPtr+2        ; destbank = $e0
                 jmp   HDGR_Blit
 
-_HGDR_BLIT_P2_AUX
+HGDR_BLIT_P2_AUX mx   %00
                 stz   HDGR_DataPtr+2        ; data bank
                 sta   HDGR_DataPtr          ; data ptr
                 lda   #$400
@@ -132,6 +143,7 @@ _HGDR_BLIT_P2_AUX
                 sta   HDGR_DestPtr+2        ; destbank = e1
                 jmp   HDGR_Blit
 
+** Actual Blit routine - IIgs DP long indirect addressing
 HDGR_Blit       mx    %00
                 stz   HDGR_CurLine
 :line
@@ -158,11 +170,11 @@ HDGR_Blit       mx    %00
                 adc   #40
                 sta   HDGR_DataPtr
                 bra   :line
+:done           rts
 
-:done
-                rts
-                mx    %11
-HDGR_ShowMode   lda   HDGR_Mode
+** Dispatch to reguler or glitchy display mode, toggle with "S"
+HDGR_ShowMode   mx    %11
+                lda   HDGR_Mode
                 bne   :glitchy
 :normal         jsr   HDGR2
                 bra   :handle_key
@@ -171,6 +183,7 @@ HDGR_ShowMode   lda   HDGR_Mode
                 beq   :switch
                 cmp   #"S"
                 beq   :switch
+                                            ; <<- Handle any other keys here ...
                 rts
 :switch         lda   HDGR_Mode
                 bne   :set0
@@ -179,78 +192,67 @@ HDGR_ShowMode   lda   HDGR_Mode
 :set0           stz   HDGR_Mode
                 bra   HDGR_ShowMode
 
-
-_nextLine       =     $20
+** This uses a scanline perfect check
 HDGR
-:frameloop      lda   #1
-                sta   _nextLine
+:frameloop      sei
+                lda   #1
+                sta   HDGR_NextLine
                 _WAITSCBA
                 sta   $c054
                 bra   :skip1
 :fliploop       _WAITSCBA
                 sta   $c054
-:skip1          inc   _nextLine
-                inc   _nextLine
-                lda   _nextLine
+:skip1          inc   HDGR_NextLine
+                inc   HDGR_NextLine
+                lda   HDGR_NextLine
                 _WAITSCBA
                 sta   $c055
-                inc   _nextLine
-                inc   _nextLine
-                lda   _nextLine
+                inc   HDGR_NextLine
+                inc   HDGR_NextLine
+                lda   HDGR_NextLine
                 cmp   #192
                 bcc   :fliploop
-
+                cli
                 lda   KEY
                 bpl   :frameloop
                 sta   STROBE
-
                 rts                         ; always return the key pressed
 
-                bra   :frameloop
-
-
+** This only checks every other scanline, is easier and faster, but
+** for reasons unrelated, I can't use it with some emulators.
 HDGR2
-:frameloop      lda   #$7F                  ; Start Line
-                sta   _nextLine
+:frameloop      sei
+                lda   #$7F                  ; Start Line
+                sta   HDGR_NextLine
                 _WAITSCB2
                 sta   $c054
                 bra   :skip1
 :fliploop       _WAITSCB2
                 sta   $c054
-:skip1          inc   _nextLine
-                lda   _nextLine
+:skip1          inc   HDGR_NextLine
+                lda   HDGR_NextLine
                 _WAITSCB2
                 sta   $c055
-                inc   _nextLine
-                lda   _nextLine
+                inc   HDGR_NextLine
+                lda   HDGR_NextLine
                 cmp   #$e0
                 bcc   :fliploop
-
+                cli
                 lda   KEY
                 bpl   :frameloop
                 sta   STROBE
                 rts                         ; always return the key pressed
-
                 bra   :frameloop
 
 
+HDGR_NextLine   =     $20
+HDGR_DataPtr    =     $22
+HDGR_DestPtr    =     $26
+HDGR_PageOffset =     $2A
+HDGR_CurLine    =     $2C
+HDGR_Mode       db    0                     ; 0 = normal hardware; 1 = glitchy emulators
 
-
-
-* NTSC 9bit vertcnt range $FA through $1FF (250 through 511)
-WaitSCB         _WAITSCB
-                rts
-_WAITSCB        MAC
-                sta   __smc+1
-__w             lda   $C02F
-                asl   A                     ;VA is now in the Carry flag
-                lda   $C02E
-                rol   A
-__smc           cmp   #0                    ;SMC
-                bcc   __w
-                EOM
-
-
+** wait for scanline in A
 _WAITSCBA       MAC
                 sta   __smc+1               ;set scanline
 __w             rep   $30
@@ -264,6 +266,7 @@ __smc           cmp   #0                    ;SMC
                 bne   __w
                 EOM
 
+** wait for scanline/2 in A
 _WAITSCB2       MAC
                 sta   __smc+1               ;set scanline
 __w             lda   $C02E
@@ -271,22 +274,15 @@ __smc           cmp   #0                    ;SMC
                 bne   __w
                 EOM
 
-                * ^showlores          $C056
-                * ^showfull           C052
-                * ^showgraphics       C050
-                * ^showpage1          C054
-                * ^ena80  = 0       C07E
-                * ^show80 = 0      C00D
-                * ^an3on              C05e
-DLRON           lda   $C056                 ;
-                lda   $C052
-                lda   $C050
-                LDA   $C054
-                sta   $C07E
-                sta   $c00D
-                lda   $C05e
-                rts
 
+DLRON           lda   LORES                 ;$C056 - Show Low-Resolution
+                lda   CLRMIX                ;$C052 - Clear Mixed Mode (No 4 lines of text at the bottom)
+                lda   TXTCLR                ;$C050 - Switch in Graphics (Not Text)
+                lda   TXTPAGE1              ;$C054 - Switch in Text Page 1 as default
+                sta   SETIOUDIS             ;$C07E - Enable DHIRES & disable $C058-5F (W)
+                sta   SET80VID              ;$C00D - Enable 80-column firmware
+                lda   CLRAN3                ;$C053 - Clear Annunciator 3 - (In 80-Column Mode: Double Width Graphics)
+                rts
 
 
 **** APPLE ROM LOCATIONS ****
@@ -295,6 +291,15 @@ STROBE          =     $C010
 HOME            =     $FC58
 CROUT           =     $FD8E
 COUT            =     $FDED
+***** DLR RELATED STUFF *****
+LORES = $C056
+CLRMIX = $C052
+TXTCLR = $C050
+TXTPAGE1 = $C054
+TXTPAGE2 = $C055
+SETIOUDIS = $C07E 
+SET80VID = $C00D 
+CLRAN3 = $C05E
 
 *************************************
 * LORES / DOUBLE LORES / TEXT LINES *
@@ -330,8 +335,10 @@ LoLineTable     da    Lo01,Lo02,Lo03,Lo04,Lo05,Lo06
                 da    Lo13,Lo14,Lo15,Lo16,Lo17,Lo18
                 da    Lo19,Lo20,Lo21,Lo22,Lo23,Lo24
 
+
+** Message for users at the beginning... works on my machine! *shrug*
 HELP            jsr   HOME                  ; clear screen
-                LUP   6
+                LUP   8
                 jsr   CROUT
                 --^
                 ldx   #0
@@ -352,5 +359,6 @@ HELP            jsr   HOME                  ; clear screen
                 rts
 _HelpTxt        asc   "   PRESS 'S' IF THE IMAGE IS GARBLED.",00
 _HelpTxt2       asc   "      HIT ANY KEY TO CONTINUE...",00
+
                 put   testimages.s
 
