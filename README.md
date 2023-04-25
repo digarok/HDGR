@@ -11,6 +11,10 @@ The DGR mode is originally capable of 80x48 at 16 colors.  HDGR switches between
 
 There's not really any trickery, though this does use some CPU.  And I'm not really treading any new ground as mode switching tricks go all the way back to Bob Bishop, and there are other people who've done this with other modes like Deater with lo-res and DWSJason with text (TextFunk).  But I do believe I'm the first to make this mode.  This is a fact I put in the README because I can't really share this info at dinner parties, can I?
 
+## Try it out!
+You can download a self-booting disk image from the releases page to try it on an emulator, or transfer it to real hardware to try there:
+[DOWNLOAD RELEASES](https://github.com/digarok/HDGR/releases/latest)
+
 
 ## Implementation
 This is currently an Apple IIgs only implementation.  I use the IIgs' VERTCNT registers to track the current scanline.  I also write directly to AUX bank with 16-bit long indirect instructions.
