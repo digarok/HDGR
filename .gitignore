@@ -1,1 +1,6 @@
 env
+_FileInformation.txt
+*.system
+*.swp
+config.txt
+config.kegs

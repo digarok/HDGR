@@ -5,8 +5,8 @@ disks:
   file: hdgr.2mg
   size: 800KB
   files:
-#  - input: ../PRODOS.2.4.2/PRODOS
-#    output: /hdgr       
+  - input: ../PRODOS.2.4.2/PRODOS
+    output: /hdgr       
   - input: src/hdgr.system
     output: /hdgr
   
